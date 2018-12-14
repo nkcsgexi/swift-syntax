@@ -8,6 +8,12 @@ code.
 > Note: SwiftSyntax is still in development, and the API is not guaranteed to
 > be stable. It's subject to change without warning.
 
+Several known SwiftSyntax users:
+
+[Swift AST Explorer](https://swift-ast-explorer.kishikawakatsumi.com/): a Swift AST visualizer.
+
+[SwiftRewriter](https://github.com/inamiy/SwiftRewriter): a Swift code formatter using SwiftSyntax.
+
 ## Usage
 
 Add this repository to the `Package.swift` manifest of your project:
