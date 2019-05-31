@@ -130,7 +130,6 @@ public enum TokenKind {
   case prefixOperator(String)
   case dollarIdentifier(String)
   case contextualKeyword(String)
-  case rawStringDelimiter(String)
   case stringSegment(String)
   case stringInterpolationAnchor
   case yield
@@ -254,7 +253,6 @@ public enum TokenKind {
     case .prefixOperator(let text): return text
     case .dollarIdentifier(let text): return text
     case .contextualKeyword(let text): return text
-    case .rawStringDelimiter(let text): return text
     case .stringSegment(let text): return text
     case .stringInterpolationAnchor: return ")"
     case .yield: return "yield"
@@ -379,7 +377,6 @@ public enum TokenKind {
     case .prefixOperator: return false
     case .dollarIdentifier: return false
     case .contextualKeyword: return false
-    case .rawStringDelimiter: return false
     case .stringSegment: return false
     case .stringInterpolationAnchor: return false
     case .yield: return false
@@ -504,7 +501,6 @@ public enum TokenKind {
     case .prefixOperator(_): return "oper_prefix"
     case .dollarIdentifier(_): return "dollarident"
     case .contextualKeyword(_): return "contextual_keyword"
-    case .rawStringDelimiter(_): return "raw_string_delimiter"
     case .stringSegment(_): return "string_segment"
     case .stringInterpolationAnchor: return "string_interpolation_anchor"
     case .yield: return "kw_yield"
@@ -629,7 +625,6 @@ public enum TokenKind {
     case .prefixOperator(let text): return SourceLength(of: text)
     case .dollarIdentifier(let text): return SourceLength(of: text)
     case .contextualKeyword(let text): return SourceLength(of: text)
-    case .rawStringDelimiter(let text): return SourceLength(of: text)
     case .stringSegment(let text): return SourceLength(of: text)
     case .stringInterpolationAnchor: return SourceLength(utf8Length: 1)
     case .yield: return SourceLength(utf8Length: 5)
@@ -766,8 +761,6 @@ extension TokenKind: Equatable {
     case (.dollarIdentifier(let lhsText), .dollarIdentifier(let rhsText)):
       return lhsText == rhsText
     case (.contextualKeyword(let lhsText), .contextualKeyword(let rhsText)):
-      return lhsText == rhsText
-    case (.rawStringDelimiter(let lhsText), .rawStringDelimiter(let rhsText)):
       return lhsText == rhsText
     case (.stringSegment(let lhsText), .stringSegment(let rhsText)):
       return lhsText == rhsText
@@ -1013,8 +1006,6 @@ extension TokenKind {
       return .dollarIdentifier(.fromBuffer(textBuffer))
     case 114:
       return .contextualKeyword(.fromBuffer(textBuffer))
-    case 119:
-      return .rawStringDelimiter(.fromBuffer(textBuffer))
     case 104:
       return .stringSegment(.fromBuffer(textBuffer))
     case 101:
@@ -1267,8 +1258,6 @@ extension TokenKind {
       return true
     case 114:
       return true
-    case 119:
-      return true
     case 104:
       return true
     case 101:
@@ -1399,7 +1388,6 @@ internal enum RawTokenKind: CTokenKind {
   case prefixOperator = 109
   case dollarIdentifier = 106
   case contextualKeyword = 114
-  case rawStringDelimiter = 119
   case stringSegment = 104
   case stringInterpolationAnchor = 101
   case yield = 116
@@ -1793,12 +1781,6 @@ extension TokenKind {
       let length = text.utf8.count
       return text.utf8.withContiguousStorageIfAvailable({ (buf: UnsafeBufferPointer<UInt8>) in
         return body(.init(kind: .contextualKeyword, length: length, customText: buf))
-      })!
-    case .rawStringDelimiter(var text):
-      text.makeNativeUTF8IfNeeded()
-      let length = text.utf8.count
-      return text.utf8.withContiguousStorageIfAvailable({ (buf: UnsafeBufferPointer<UInt8>) in
-        return body(.init(kind: .rawStringDelimiter, length: length, customText: buf))
       })!
     case .stringSegment(var text):
       text.makeNativeUTF8IfNeeded()

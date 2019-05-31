@@ -1198,11 +1198,11 @@ extension DictionaryElementListSyntax: Sequence {
   }
 }
 
-/// `StringLiteralSegmentsSyntax` represents a collection of one or more
-/// `Syntax` nodes. StringLiteralSegmentsSyntax behaves
+/// `StringInterpolationSegmentsSyntax` represents a collection of one or more
+/// `Syntax` nodes. StringInterpolationSegmentsSyntax behaves
 /// as a regular Swift collection, and has accessors that return new
 /// versions of the collection with different children.
-public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollection {
+public struct StringInterpolationSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollection {
   let data: SyntaxData
 
   /// Creates a Syntax node from the provided root and data.
@@ -1213,52 +1213,52 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
   /// The number of elements, `present` or `missing`, in this collection.
   public var count: Int { return raw.numberOfChildren }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by replacing the underlying layout with
+  /// Creates a new `StringInterpolationSegmentsSyntax` by replacing the underlying layout with
   /// a different set of raw syntax nodes.
   ///
   /// - Parameter layout: The new list of raw syntax nodes underlying this
   ///                     collection.
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with the new layout underlying it.
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with the new layout underlying it.
   internal func replacingLayout(
-    _ layout: [RawSyntax?]) -> StringLiteralSegmentsSyntax {
+    _ layout: [RawSyntax?]) -> StringInterpolationSegmentsSyntax {
     let newRaw = data.raw.replacingLayout(layout)
     let newData = data.replacingSelf(newRaw)
-    return StringLiteralSegmentsSyntax(newData)
+    return StringInterpolationSegmentsSyntax(newData)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by appending the provided syntax element
+  /// Creates a new `StringInterpolationSegmentsSyntax` by appending the provided syntax element
   /// to the children.
   ///
   /// - Parameter syntax: The element to append.
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with that element appended to the end.
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with that element appended to the end.
   public func appending(
-    _ syntax: Syntax) -> StringLiteralSegmentsSyntax {
+    _ syntax: Syntax) -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     newLayout.append(syntax.raw)
     return replacingLayout(newLayout)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by prepending the provided syntax element
+  /// Creates a new `StringInterpolationSegmentsSyntax` by prepending the provided syntax element
   /// to the children.
   ///
   /// - Parameter syntax: The element to prepend.
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with that element prepended to the
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with that element prepended to the
   ///            beginning.
   public func prepending(
-    _ syntax: Syntax) -> StringLiteralSegmentsSyntax {
+    _ syntax: Syntax) -> StringInterpolationSegmentsSyntax {
     return inserting(syntax, at: 0)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by inserting the provided syntax element
+  /// Creates a new `StringInterpolationSegmentsSyntax` by inserting the provided syntax element
   /// at the provided index in the children.
   ///
   /// - Parameters:
   ///   - syntax: The element to insert.
   ///   - index: The index at which to insert the element in the collection.
   ///
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with that element appended to the end.
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with that element appended to the end.
   public func inserting(_ syntax: Syntax,
-                        at index: Int) -> StringLiteralSegmentsSyntax {
+                        at index: Int) -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     /// Make sure the index is a valid insertion index (0 to 1 past the end)
     precondition((newLayout.startIndex...newLayout.endIndex).contains(index),
@@ -1267,16 +1267,16 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
     return replacingLayout(newLayout)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by replacing the syntax element
+  /// Creates a new `StringInterpolationSegmentsSyntax` by replacing the syntax element
   /// at the provided index.
   ///
   /// - Parameters:
   ///   - index: The index at which to replace the element in the collection.
   ///   - syntax: The element to replace with.
   ///
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with the new element at the provided index.
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with the new element at the provided index.
   public func replacing(childAt index: Int,
-                        with syntax: Syntax) -> StringLiteralSegmentsSyntax {
+                        with syntax: Syntax) -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     /// Make sure the index is a valid index for replacing
     precondition((newLayout.startIndex..<newLayout.endIndex).contains(index),
@@ -1285,64 +1285,64 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
     return replacingLayout(newLayout)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by removing the syntax element at the
+  /// Creates a new `StringInterpolationSegmentsSyntax` by removing the syntax element at the
   /// provided index.
   ///
   /// - Parameter index: The index of the element to remove from the collection.
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with the element at the provided index
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with the element at the provided index
   ///            removed.
-  public func removing(childAt index: Int) -> StringLiteralSegmentsSyntax {
+  public func removing(childAt index: Int) -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     newLayout.remove(at: index)
     return replacingLayout(newLayout)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by removing the first element.
+  /// Creates a new `StringInterpolationSegmentsSyntax` by removing the first element.
   ///
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with the first element removed.
-  public func removingFirst() -> StringLiteralSegmentsSyntax {
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with the first element removed.
+  public func removingFirst() -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     newLayout.removeFirst()
     return replacingLayout(newLayout)
   }
 
-  /// Creates a new `StringLiteralSegmentsSyntax` by removing the last element.
+  /// Creates a new `StringInterpolationSegmentsSyntax` by removing the last element.
   ///
-  /// - Returns: A new `StringLiteralSegmentsSyntax` with the last element removed.
-  public func removingLast() -> StringLiteralSegmentsSyntax {
+  /// - Returns: A new `StringInterpolationSegmentsSyntax` with the last element removed.
+  public func removingLast() -> StringInterpolationSegmentsSyntax {
     var newLayout = data.raw.formLayoutArray()
     newLayout.removeLast()
     return replacingLayout(newLayout)
   }
 
-  /// Returns a new `StringLiteralSegmentsSyntax` with its leading trivia replaced
+  /// Returns a new `StringInterpolationSegmentsSyntax` with its leading trivia replaced
   /// by the provided trivia.
-  public func withLeadingTrivia(_ leadingTrivia: Trivia) -> StringLiteralSegmentsSyntax {
-    return StringLiteralSegmentsSyntax(data.withLeadingTrivia(leadingTrivia))
+  public func withLeadingTrivia(_ leadingTrivia: Trivia) -> StringInterpolationSegmentsSyntax {
+    return StringInterpolationSegmentsSyntax(data.withLeadingTrivia(leadingTrivia))
   }
 
-  /// Returns a new `StringLiteralSegmentsSyntax` with its trailing trivia replaced
+  /// Returns a new `StringInterpolationSegmentsSyntax` with its trailing trivia replaced
   /// by the provided trivia.
-  public func withTrailingTrivia(_ trailingTrivia: Trivia) -> StringLiteralSegmentsSyntax {
-    return StringLiteralSegmentsSyntax(data.withTrailingTrivia(trailingTrivia))
+  public func withTrailingTrivia(_ trailingTrivia: Trivia) -> StringInterpolationSegmentsSyntax {
+    return StringInterpolationSegmentsSyntax(data.withTrailingTrivia(trailingTrivia))
   }
 
-  /// Returns a new `StringLiteralSegmentsSyntax` with its leading trivia removed.
-  public func withoutLeadingTrivia() -> StringLiteralSegmentsSyntax {
+  /// Returns a new `StringInterpolationSegmentsSyntax` with its leading trivia removed.
+  public func withoutLeadingTrivia() -> StringInterpolationSegmentsSyntax {
     return withLeadingTrivia([])
   }
 
-  /// Returns a new `StringLiteralSegmentsSyntax` with its trailing trivia removed.
-  public func withoutTrailingTrivia() -> StringLiteralSegmentsSyntax {
+  /// Returns a new `StringInterpolationSegmentsSyntax` with its trailing trivia removed.
+  public func withoutTrailingTrivia() -> StringInterpolationSegmentsSyntax {
     return withTrailingTrivia([])
   }
 
-  /// Returns a new `StringLiteralSegmentsSyntax` with all trivia removed.
-  public func withoutTrivia() -> StringLiteralSegmentsSyntax {
+  /// Returns a new `StringInterpolationSegmentsSyntax` with all trivia removed.
+  public func withoutTrivia() -> StringInterpolationSegmentsSyntax {
     return withoutLeadingTrivia().withoutTrailingTrivia()
   }
 
-  /// The leading trivia (spaces, newlines, etc.) associated with this `StringLiteralSegmentsSyntax`.
+  /// The leading trivia (spaces, newlines, etc.) associated with this `StringInterpolationSegmentsSyntax`.
   public var leadingTrivia: Trivia? {
     get {
       return raw.formLeadingTrivia()
@@ -1352,7 +1352,7 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
     }
   }
 
-  /// The trailing trivia (spaces, newlines, etc.) associated with this `StringLiteralSegmentsSyntax`.
+  /// The trailing trivia (spaces, newlines, etc.) associated with this `StringInterpolationSegmentsSyntax`.
   public var trailingTrivia: Trivia? {
     get {
       return raw.formTrailingTrivia()
@@ -1362,8 +1362,8 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
     }
   }
 
-  /// Determines if two `StringLiteralSegmentsSyntax` nodes are equal to each other.
-  public static func ==(lhs: StringLiteralSegmentsSyntax, rhs: StringLiteralSegmentsSyntax) -> Bool {
+  /// Determines if two `StringInterpolationSegmentsSyntax` nodes are equal to each other.
+  public static func ==(lhs: StringInterpolationSegmentsSyntax, rhs: StringInterpolationSegmentsSyntax) -> Bool {
     return lhs.data.nodeId == rhs.data.nodeId
   }
 
@@ -1373,8 +1373,8 @@ public struct StringLiteralSegmentsSyntax: _SyntaxBase, Hashable, SyntaxCollecti
   }
 }
 
-/// Conformance for `StringLiteralSegmentsSyntax`` to the Sequence protocol.
-extension StringLiteralSegmentsSyntax: Sequence {
+/// Conformance for `StringInterpolationSegmentsSyntax`` to the Sequence protocol.
+extension StringInterpolationSegmentsSyntax: Sequence {
   fileprivate static func nextElement<Iter>(
     _ iterator: inout Iter, parent: _SyntaxBase
   ) -> Syntax? where Iter: AbsoluteRawSyntaxIteratorProtocol {
@@ -1387,13 +1387,13 @@ extension StringLiteralSegmentsSyntax: Sequence {
     private let parent: _SyntaxBase
     private var iterator: PresentRawSyntaxChildren.Iterator
 
-    public init(collection node: StringLiteralSegmentsSyntax) {
+    public init(collection node: StringInterpolationSegmentsSyntax) {
       self.iterator = .init(parent: node.data.absoluteRaw)
       self.parent = node
     }
 
     public mutating func next() -> Syntax? {
-      return StringLiteralSegmentsSyntax.nextElement(&iterator, parent: parent)
+      return StringInterpolationSegmentsSyntax.nextElement(&iterator, parent: parent)
     }
   }
 
@@ -1411,24 +1411,24 @@ extension StringLiteralSegmentsSyntax: Sequence {
       private let parent: _SyntaxBase
       private var iterator: ReversedPresentRawSyntaxChildren.Iterator
 
-      public init(collection node: StringLiteralSegmentsSyntax) {
+      public init(collection node: StringInterpolationSegmentsSyntax) {
         self.iterator = .init(parent: node.data.absoluteRaw)
         self.parent = node
       }
 
       public mutating func next() -> Syntax? {
-        return StringLiteralSegmentsSyntax.nextElement(&iterator, parent: parent)
+        return StringInterpolationSegmentsSyntax.nextElement(&iterator, parent: parent)
       }
     }
 
-    let collection: StringLiteralSegmentsSyntax
+    let collection: StringInterpolationSegmentsSyntax
 
     /// Returns an iterator over the elements of this syntax collection.
     public func makeIterator() -> Iterator {
       return Iterator(collection: collection)
     }
 
-    public func reversed() -> StringLiteralSegmentsSyntax {
+    public func reversed() -> StringInterpolationSegmentsSyntax {
       return collection
     }
   }
@@ -9247,7 +9247,7 @@ extension DictionaryElementListSyntax: CustomReflectable {
     return Mirror(self, unlabeledChildren: self.map{ $0 })
   }
 }
-extension StringLiteralSegmentsSyntax: CustomReflectable {
+extension StringInterpolationSegmentsSyntax: CustomReflectable {
   public var customMirror: Mirror {
     return Mirror(self, unlabeledChildren: self.map{ $0 })
   }

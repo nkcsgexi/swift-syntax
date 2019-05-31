@@ -35,7 +35,7 @@ internal enum SyntaxKind: CSyntaxKind {
   case tupleElementList = 165
   case arrayElementList = 166
   case dictionaryElementList = 167
-  case stringLiteralSegments = 168
+  case stringInterpolationSegments = 168
   case tryExpr = 27
   case declNameArgument = 94
   case declNameArgumentList = 169
@@ -64,6 +64,7 @@ internal enum SyntaxKind: CSyntaxKind {
   case arrayElement = 98
   case dictionaryElement = 99
   case integerLiteralExpr = 47
+  case stringLiteralExpr = 48
   case booleanLiteralExpr = 49
   case ternaryExpr = 50
   case memberAccessExpr = 51
@@ -86,7 +87,7 @@ internal enum SyntaxKind: CSyntaxKind {
   case specializeExpr = 63
   case stringSegment = 104
   case expressionSegment = 105
-  case stringLiteralExpr = 48
+  case stringInterpolationExpr = 64
   case keyPathExpr = 65
   case keyPathBaseExpr = 66
   case objcNamePiece = 106
@@ -298,6 +299,7 @@ internal enum SyntaxKind: CSyntaxKind {
     case .arrayExpr: return true
     case .dictionaryExpr: return true
     case .integerLiteralExpr: return true
+    case .stringLiteralExpr: return true
     case .booleanLiteralExpr: return true
     case .ternaryExpr: return true
     case .memberAccessExpr: return true
@@ -312,7 +314,7 @@ internal enum SyntaxKind: CSyntaxKind {
     case .forcedValueExpr: return true
     case .postfixUnaryExpr: return true
     case .specializeExpr: return true
-    case .stringLiteralExpr: return true
+    case .stringInterpolationExpr: return true
     case .keyPathExpr: return true
     case .keyPathBaseExpr: return true
     case .objcKeyPathExpr: return true
@@ -354,7 +356,7 @@ internal enum SyntaxKind: CSyntaxKind {
     case .tupleElementList: return true
     case .arrayElementList: return true
     case .dictionaryElementList: return true
-    case .stringLiteralSegments: return true
+    case .stringInterpolationSegments: return true
     case .declNameArgumentList: return true
     case .exprList: return true
     case .closureCaptureItemList: return true
@@ -494,8 +496,8 @@ internal func makeSyntax(_ data: SyntaxData) -> _SyntaxBase {
     return ArrayElementListSyntax(data)
   case .dictionaryElementList:
     return DictionaryElementListSyntax(data)
-  case .stringLiteralSegments:
-    return StringLiteralSegmentsSyntax(data)
+  case .stringInterpolationSegments:
+    return StringInterpolationSegmentsSyntax(data)
   case .tryExpr:
     return TryExprSyntax(data)
   case .declNameArgument:
@@ -552,6 +554,8 @@ internal func makeSyntax(_ data: SyntaxData) -> _SyntaxBase {
     return DictionaryElementSyntax(data)
   case .integerLiteralExpr:
     return IntegerLiteralExprSyntax(data)
+  case .stringLiteralExpr:
+    return StringLiteralExprSyntax(data)
   case .booleanLiteralExpr:
     return BooleanLiteralExprSyntax(data)
   case .ternaryExpr:
@@ -596,8 +600,8 @@ internal func makeSyntax(_ data: SyntaxData) -> _SyntaxBase {
     return StringSegmentSyntax(data)
   case .expressionSegment:
     return ExpressionSegmentSyntax(data)
-  case .stringLiteralExpr:
-    return StringLiteralExprSyntax(data)
+  case .stringInterpolationExpr:
+    return StringInterpolationExprSyntax(data)
   case .keyPathExpr:
     return KeyPathExprSyntax(data)
   case .keyPathBaseExpr:

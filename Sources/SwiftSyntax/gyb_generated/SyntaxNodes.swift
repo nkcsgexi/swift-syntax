@@ -3810,6 +3810,96 @@ public struct IntegerLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   }
 }
 
+public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
+  enum Cursor: Int {
+    case stringLiteral
+  }
+
+  let data: SyntaxData
+
+  /// Creates a `StringLiteralExprSyntax` node from the provided root and data.
+  internal init(_ data: SyntaxData) {
+    self.data = data
+  }
+
+  public var stringLiteral: TokenSyntax {
+  get {
+    let child = data.child(at: Cursor.stringLiteral, parent: self)
+    return TokenSyntax(child!)
+  }
+  set(value) {
+    self = withStringLiteral(value)
+  }
+  }
+
+  /// Returns a copy of the receiver with its `stringLiteral` replaced.
+  /// - param newChild: The new `stringLiteral` to replace the node's
+  ///                   current `stringLiteral`, if present.
+  public func withStringLiteral(
+    _ newChild: TokenSyntax?) -> StringLiteralExprSyntax {
+    let raw = newChild?.raw ?? RawSyntax.missingToken(TokenKind.stringLiteral(""))
+    let newData = data.replacingChild(raw, at: Cursor.stringLiteral)
+    return StringLiteralExprSyntax(newData)
+  }
+
+  /// Returns a new `StringLiteralExprSyntax` with its leading trivia replaced
+  /// by the provided trivia.
+  public func withLeadingTrivia(_ leadingTrivia: Trivia) -> StringLiteralExprSyntax {
+    return StringLiteralExprSyntax(data.withLeadingTrivia(leadingTrivia))
+  }
+
+  /// Returns a new `StringLiteralExprSyntax` with its trailing trivia replaced
+  /// by the provided trivia.
+  public func withTrailingTrivia(_ trailingTrivia: Trivia) -> StringLiteralExprSyntax {
+    return StringLiteralExprSyntax(data.withTrailingTrivia(trailingTrivia))
+  }
+
+  /// Returns a new `StringLiteralExprSyntax` with its leading trivia removed.
+  public func withoutLeadingTrivia() -> StringLiteralExprSyntax {
+    return withLeadingTrivia([])
+  }
+
+  /// Returns a new `StringLiteralExprSyntax` with its trailing trivia removed.
+  public func withoutTrailingTrivia() -> StringLiteralExprSyntax {
+    return withTrailingTrivia([])
+  }
+
+  /// Returns a new `StringLiteralExprSyntax` with all trivia removed.
+  public func withoutTrivia() -> StringLiteralExprSyntax {
+    return withoutLeadingTrivia().withoutTrailingTrivia()
+  }
+
+  /// The leading trivia (spaces, newlines, etc.) associated with this `StringLiteralExprSyntax`.
+  public var leadingTrivia: Trivia? {
+    get {
+      return raw.formLeadingTrivia()
+    }
+    set {
+      self = withLeadingTrivia(newValue ?? [])
+    }
+  }
+
+  /// The trailing trivia (spaces, newlines, etc.) associated with this `StringLiteralExprSyntax`.
+  public var trailingTrivia: Trivia? {
+    get {
+      return raw.formTrailingTrivia()
+    }
+    set {
+      self = withTrailingTrivia(newValue ?? [])
+    }
+  }
+
+  /// Determines if two `StringLiteralExprSyntax` nodes are equal to each other.
+  public static func ==(lhs: StringLiteralExprSyntax, rhs: StringLiteralExprSyntax) -> Bool {
+    return lhs.data.nodeId == rhs.data.nodeId
+  }
+
+  /// Feed the essential parts of this node to the supplied hasher.
+  public func hash(into hasher: inout Hasher) {
+    return data.nodeId.hash(into: &hasher)
+  }
+}
+
 public struct BooleanLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   enum Cursor: Int {
     case booleanLiteral
@@ -6356,9 +6446,8 @@ public struct StringSegmentSyntax: Syntax, _SyntaxBase, Hashable {
 public struct ExpressionSegmentSyntax: Syntax, _SyntaxBase, Hashable {
   enum Cursor: Int {
     case backslash
-    case delimiter
     case leftParen
-    case expressions
+    case expression
     case rightParen
   }
 
@@ -6388,26 +6477,6 @@ public struct ExpressionSegmentSyntax: Syntax, _SyntaxBase, Hashable {
     let newData = data.replacingChild(raw, at: Cursor.backslash)
     return ExpressionSegmentSyntax(newData)
   }
-  public var delimiter: TokenSyntax? {
-  get {
-    let child = data.child(at: Cursor.delimiter, parent: self)
-    if child == nil { return nil }
-    return TokenSyntax(child!)
-  }
-  set(value) {
-    self = withDelimiter(value)
-  }
-  }
-
-  /// Returns a copy of the receiver with its `delimiter` replaced.
-  /// - param newChild: The new `delimiter` to replace the node's
-  ///                   current `delimiter`, if present.
-  public func withDelimiter(
-    _ newChild: TokenSyntax?) -> ExpressionSegmentSyntax {
-    let raw = newChild?.raw
-    let newData = data.replacingChild(raw, at: Cursor.delimiter)
-    return ExpressionSegmentSyntax(newData)
-  }
   public var leftParen: TokenSyntax {
   get {
     let child = data.child(at: Cursor.leftParen, parent: self)
@@ -6427,42 +6496,23 @@ public struct ExpressionSegmentSyntax: Syntax, _SyntaxBase, Hashable {
     let newData = data.replacingChild(raw, at: Cursor.leftParen)
     return ExpressionSegmentSyntax(newData)
   }
-  public var expressions: FunctionCallArgumentListSyntax {
+  public var expression: ExprSyntax {
   get {
-    let child = data.child(at: Cursor.expressions, parent: self)
-    return FunctionCallArgumentListSyntax(child!)
+    let child = data.child(at: Cursor.expression, parent: self)
+    return makeSyntax(child!) as! ExprSyntax
   }
   set(value) {
-    self = withExpressions(value)
+    self = withExpression(value)
   }
   }
 
-  /// Adds the provided `Expression` to the node's `expressions`
-  /// collection.
-  /// - param element: The new `Expression` to add to the node's
-  ///                  `expressions` collection.
-  /// - returns: A copy of the receiver with the provided `Expression`
-  ///            appended to its `expressions` collection.
-  public func addExpression(_ element: FunctionCallArgumentSyntax) -> ExpressionSegmentSyntax {
-    var collection: RawSyntax
-    if let col = raw[Cursor.expressions] {
-      collection = col.appending(element.raw)
-    } else {
-      collection = RawSyntax.create(kind: SyntaxKind.functionCallArgumentList,
-        layout: [element.raw], length: element.raw.totalLength, presence: .present)
-    }
-    let newData = data.replacingChild(collection,
-                                      at: Cursor.expressions)
-    return ExpressionSegmentSyntax(newData)
-  }
-
-  /// Returns a copy of the receiver with its `expressions` replaced.
-  /// - param newChild: The new `expressions` to replace the node's
-  ///                   current `expressions`, if present.
-  public func withExpressions(
-    _ newChild: FunctionCallArgumentListSyntax?) -> ExpressionSegmentSyntax {
-    let raw = newChild?.raw ?? RawSyntax.missing(SyntaxKind.functionCallArgumentList)
-    let newData = data.replacingChild(raw, at: Cursor.expressions)
+  /// Returns a copy of the receiver with its `expression` replaced.
+  /// - param newChild: The new `expression` to replace the node's
+  ///                   current `expression`, if present.
+  public func withExpression(
+    _ newChild: ExprSyntax?) -> ExpressionSegmentSyntax {
+    let raw = newChild?.raw ?? RawSyntax.missing(SyntaxKind.expr)
+    let newData = data.replacingChild(raw, at: Cursor.expression)
     return ExpressionSegmentSyntax(newData)
   }
   public var rightParen: TokenSyntax {
@@ -6543,42 +6593,20 @@ public struct ExpressionSegmentSyntax: Syntax, _SyntaxBase, Hashable {
   }
 }
 
-public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
+public struct StringInterpolationExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   enum Cursor: Int {
-    case openDelimiter
     case openQuote
     case segments
     case closeQuote
-    case closeDelimiter
   }
 
   let data: SyntaxData
 
-  /// Creates a `StringLiteralExprSyntax` node from the provided root and data.
+  /// Creates a `StringInterpolationExprSyntax` node from the provided root and data.
   internal init(_ data: SyntaxData) {
     self.data = data
   }
 
-  public var openDelimiter: TokenSyntax? {
-  get {
-    let child = data.child(at: Cursor.openDelimiter, parent: self)
-    if child == nil { return nil }
-    return TokenSyntax(child!)
-  }
-  set(value) {
-    self = withOpenDelimiter(value)
-  }
-  }
-
-  /// Returns a copy of the receiver with its `openDelimiter` replaced.
-  /// - param newChild: The new `openDelimiter` to replace the node's
-  ///                   current `openDelimiter`, if present.
-  public func withOpenDelimiter(
-    _ newChild: TokenSyntax?) -> StringLiteralExprSyntax {
-    let raw = newChild?.raw
-    let newData = data.replacingChild(raw, at: Cursor.openDelimiter)
-    return StringLiteralExprSyntax(newData)
-  }
   public var openQuote: TokenSyntax {
   get {
     let child = data.child(at: Cursor.openQuote, parent: self)
@@ -6593,15 +6621,15 @@ public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   /// - param newChild: The new `openQuote` to replace the node's
   ///                   current `openQuote`, if present.
   public func withOpenQuote(
-    _ newChild: TokenSyntax?) -> StringLiteralExprSyntax {
+    _ newChild: TokenSyntax?) -> StringInterpolationExprSyntax {
     let raw = newChild?.raw ?? RawSyntax.missingToken(TokenKind.stringQuote)
     let newData = data.replacingChild(raw, at: Cursor.openQuote)
-    return StringLiteralExprSyntax(newData)
+    return StringInterpolationExprSyntax(newData)
   }
-  public var segments: StringLiteralSegmentsSyntax {
+  public var segments: StringInterpolationSegmentsSyntax {
   get {
     let child = data.child(at: Cursor.segments, parent: self)
-    return StringLiteralSegmentsSyntax(child!)
+    return StringInterpolationSegmentsSyntax(child!)
   }
   set(value) {
     self = withSegments(value)
@@ -6614,27 +6642,27 @@ public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   ///                  `segments` collection.
   /// - returns: A copy of the receiver with the provided `Segment`
   ///            appended to its `segments` collection.
-  public func addSegment(_ element: Syntax) -> StringLiteralExprSyntax {
+  public func addSegment(_ element: Syntax) -> StringInterpolationExprSyntax {
     var collection: RawSyntax
     if let col = raw[Cursor.segments] {
       collection = col.appending(element.raw)
     } else {
-      collection = RawSyntax.create(kind: SyntaxKind.stringLiteralSegments,
+      collection = RawSyntax.create(kind: SyntaxKind.stringInterpolationSegments,
         layout: [element.raw], length: element.raw.totalLength, presence: .present)
     }
     let newData = data.replacingChild(collection,
                                       at: Cursor.segments)
-    return StringLiteralExprSyntax(newData)
+    return StringInterpolationExprSyntax(newData)
   }
 
   /// Returns a copy of the receiver with its `segments` replaced.
   /// - param newChild: The new `segments` to replace the node's
   ///                   current `segments`, if present.
   public func withSegments(
-    _ newChild: StringLiteralSegmentsSyntax?) -> StringLiteralExprSyntax {
-    let raw = newChild?.raw ?? RawSyntax.missing(SyntaxKind.stringLiteralSegments)
+    _ newChild: StringInterpolationSegmentsSyntax?) -> StringInterpolationExprSyntax {
+    let raw = newChild?.raw ?? RawSyntax.missing(SyntaxKind.stringInterpolationSegments)
     let newData = data.replacingChild(raw, at: Cursor.segments)
-    return StringLiteralExprSyntax(newData)
+    return StringInterpolationExprSyntax(newData)
   }
   public var closeQuote: TokenSyntax {
   get {
@@ -6650,60 +6678,40 @@ public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
   /// - param newChild: The new `closeQuote` to replace the node's
   ///                   current `closeQuote`, if present.
   public func withCloseQuote(
-    _ newChild: TokenSyntax?) -> StringLiteralExprSyntax {
+    _ newChild: TokenSyntax?) -> StringInterpolationExprSyntax {
     let raw = newChild?.raw ?? RawSyntax.missingToken(TokenKind.stringQuote)
     let newData = data.replacingChild(raw, at: Cursor.closeQuote)
-    return StringLiteralExprSyntax(newData)
-  }
-  public var closeDelimiter: TokenSyntax? {
-  get {
-    let child = data.child(at: Cursor.closeDelimiter, parent: self)
-    if child == nil { return nil }
-    return TokenSyntax(child!)
-  }
-  set(value) {
-    self = withCloseDelimiter(value)
-  }
+    return StringInterpolationExprSyntax(newData)
   }
 
-  /// Returns a copy of the receiver with its `closeDelimiter` replaced.
-  /// - param newChild: The new `closeDelimiter` to replace the node's
-  ///                   current `closeDelimiter`, if present.
-  public func withCloseDelimiter(
-    _ newChild: TokenSyntax?) -> StringLiteralExprSyntax {
-    let raw = newChild?.raw
-    let newData = data.replacingChild(raw, at: Cursor.closeDelimiter)
-    return StringLiteralExprSyntax(newData)
-  }
-
-  /// Returns a new `StringLiteralExprSyntax` with its leading trivia replaced
+  /// Returns a new `StringInterpolationExprSyntax` with its leading trivia replaced
   /// by the provided trivia.
-  public func withLeadingTrivia(_ leadingTrivia: Trivia) -> StringLiteralExprSyntax {
-    return StringLiteralExprSyntax(data.withLeadingTrivia(leadingTrivia))
+  public func withLeadingTrivia(_ leadingTrivia: Trivia) -> StringInterpolationExprSyntax {
+    return StringInterpolationExprSyntax(data.withLeadingTrivia(leadingTrivia))
   }
 
-  /// Returns a new `StringLiteralExprSyntax` with its trailing trivia replaced
+  /// Returns a new `StringInterpolationExprSyntax` with its trailing trivia replaced
   /// by the provided trivia.
-  public func withTrailingTrivia(_ trailingTrivia: Trivia) -> StringLiteralExprSyntax {
-    return StringLiteralExprSyntax(data.withTrailingTrivia(trailingTrivia))
+  public func withTrailingTrivia(_ trailingTrivia: Trivia) -> StringInterpolationExprSyntax {
+    return StringInterpolationExprSyntax(data.withTrailingTrivia(trailingTrivia))
   }
 
-  /// Returns a new `StringLiteralExprSyntax` with its leading trivia removed.
-  public func withoutLeadingTrivia() -> StringLiteralExprSyntax {
+  /// Returns a new `StringInterpolationExprSyntax` with its leading trivia removed.
+  public func withoutLeadingTrivia() -> StringInterpolationExprSyntax {
     return withLeadingTrivia([])
   }
 
-  /// Returns a new `StringLiteralExprSyntax` with its trailing trivia removed.
-  public func withoutTrailingTrivia() -> StringLiteralExprSyntax {
+  /// Returns a new `StringInterpolationExprSyntax` with its trailing trivia removed.
+  public func withoutTrailingTrivia() -> StringInterpolationExprSyntax {
     return withTrailingTrivia([])
   }
 
-  /// Returns a new `StringLiteralExprSyntax` with all trivia removed.
-  public func withoutTrivia() -> StringLiteralExprSyntax {
+  /// Returns a new `StringInterpolationExprSyntax` with all trivia removed.
+  public func withoutTrivia() -> StringInterpolationExprSyntax {
     return withoutLeadingTrivia().withoutTrailingTrivia()
   }
 
-  /// The leading trivia (spaces, newlines, etc.) associated with this `StringLiteralExprSyntax`.
+  /// The leading trivia (spaces, newlines, etc.) associated with this `StringInterpolationExprSyntax`.
   public var leadingTrivia: Trivia? {
     get {
       return raw.formLeadingTrivia()
@@ -6713,7 +6721,7 @@ public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
     }
   }
 
-  /// The trailing trivia (spaces, newlines, etc.) associated with this `StringLiteralExprSyntax`.
+  /// The trailing trivia (spaces, newlines, etc.) associated with this `StringInterpolationExprSyntax`.
   public var trailingTrivia: Trivia? {
     get {
       return raw.formTrailingTrivia()
@@ -6723,8 +6731,8 @@ public struct StringLiteralExprSyntax: ExprSyntax, _SyntaxBase, Hashable {
     }
   }
 
-  /// Determines if two `StringLiteralExprSyntax` nodes are equal to each other.
-  public static func ==(lhs: StringLiteralExprSyntax, rhs: StringLiteralExprSyntax) -> Bool {
+  /// Determines if two `StringInterpolationExprSyntax` nodes are equal to each other.
+  public static func ==(lhs: StringInterpolationExprSyntax, rhs: StringInterpolationExprSyntax) -> Bool {
     return lhs.data.nodeId == rhs.data.nodeId
   }
 
@@ -26767,6 +26775,13 @@ extension IntegerLiteralExprSyntax: CustomReflectable {
     ])
   }
 }
+extension StringLiteralExprSyntax: CustomReflectable {
+  public var customMirror: Mirror {
+    return Mirror(self, children: [
+      "stringLiteral": stringLiteral as Any,
+    ])
+  }
+}
 extension BooleanLiteralExprSyntax: CustomReflectable {
   public var customMirror: Mirror {
     return Mirror(self, children: [
@@ -26940,21 +26955,18 @@ extension ExpressionSegmentSyntax: CustomReflectable {
   public var customMirror: Mirror {
     return Mirror(self, children: [
       "backslash": backslash as Any,
-      "delimiter": delimiter as Any,
       "leftParen": leftParen as Any,
-      "expressions": expressions as Any,
+      "expression": expression as Any,
       "rightParen": rightParen as Any,
     ])
   }
 }
-extension StringLiteralExprSyntax: CustomReflectable {
+extension StringInterpolationExprSyntax: CustomReflectable {
   public var customMirror: Mirror {
     return Mirror(self, children: [
-      "openDelimiter": openDelimiter as Any,
       "openQuote": openQuote as Any,
       "segments": segments as Any,
       "closeQuote": closeQuote as Any,
-      "closeDelimiter": closeDelimiter as Any,
     ])
   }
 }
@@ -28374,10 +28386,10 @@ extension SyntaxNode {
     return DictionaryElementListSyntax(asSyntaxData)
   }
 
-  public var isStringLiteralSegments: Bool { return raw.kind == .stringLiteralSegments }
-  public var asStringLiteralSegments: StringLiteralSegmentsSyntax? {
-    guard isStringLiteralSegments else { return nil }
-    return StringLiteralSegmentsSyntax(asSyntaxData)
+  public var isStringInterpolationSegments: Bool { return raw.kind == .stringInterpolationSegments }
+  public var asStringInterpolationSegments: StringInterpolationSegmentsSyntax? {
+    guard isStringInterpolationSegments else { return nil }
+    return StringInterpolationSegmentsSyntax(asSyntaxData)
   }
 
   public var isTryExpr: Bool { return raw.kind == .tryExpr }
@@ -28548,6 +28560,12 @@ extension SyntaxNode {
     return IntegerLiteralExprSyntax(asSyntaxData)
   }
 
+  public var isStringLiteralExpr: Bool { return raw.kind == .stringLiteralExpr }
+  public var asStringLiteralExpr: StringLiteralExprSyntax? {
+    guard isStringLiteralExpr else { return nil }
+    return StringLiteralExprSyntax(asSyntaxData)
+  }
+
   public var isBooleanLiteralExpr: Bool { return raw.kind == .booleanLiteralExpr }
   public var asBooleanLiteralExpr: BooleanLiteralExprSyntax? {
     guard isBooleanLiteralExpr else { return nil }
@@ -28680,10 +28698,10 @@ extension SyntaxNode {
     return ExpressionSegmentSyntax(asSyntaxData)
   }
 
-  public var isStringLiteralExpr: Bool { return raw.kind == .stringLiteralExpr }
-  public var asStringLiteralExpr: StringLiteralExprSyntax? {
-    guard isStringLiteralExpr else { return nil }
-    return StringLiteralExprSyntax(asSyntaxData)
+  public var isStringInterpolationExpr: Bool { return raw.kind == .stringInterpolationExpr }
+  public var asStringInterpolationExpr: StringInterpolationExprSyntax? {
+    guard isStringInterpolationExpr else { return nil }
+    return StringInterpolationExprSyntax(asSyntaxData)
   }
 
   public var isKeyPathExpr: Bool { return raw.kind == .keyPathExpr }
@@ -29641,6 +29659,6 @@ extension StructDeclSyntax {
 extension SyntaxParser {
   static func verifyNodeDeclarationHash() -> Bool {
     return String(cString: swiftparse_syntax_structure_versioning_identifier()!) ==
-      "7586629790153792107"
+      "4901428808553373224"
   }
 }

@@ -78,7 +78,7 @@ open class SyntaxRewriter {
     return visitChildren(node) 
   }
 
-  open func visit(_ node: StringLiteralSegmentsSyntax) -> Syntax {
+  open func visit(_ node: StringInterpolationSegmentsSyntax) -> Syntax {
     return visitChildren(node) 
   }
 
@@ -194,6 +194,10 @@ open class SyntaxRewriter {
     return visitChildren(node) as! ExprSyntax
   }
 
+  open func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
+    return visitChildren(node) as! ExprSyntax
+  }
+
   open func visit(_ node: BooleanLiteralExprSyntax) -> ExprSyntax {
     return visitChildren(node) as! ExprSyntax
   }
@@ -282,7 +286,7 @@ open class SyntaxRewriter {
     return visitChildren(node) 
   }
 
-  open func visit(_ node: StringLiteralExprSyntax) -> ExprSyntax {
+  open func visit(_ node: StringInterpolationExprSyntax) -> ExprSyntax {
     return visitChildren(node) as! ExprSyntax
   }
 
@@ -957,7 +961,7 @@ open class SyntaxRewriter {
     case .tupleElementList: return visit(node as! TupleElementListSyntax)
     case .arrayElementList: return visit(node as! ArrayElementListSyntax)
     case .dictionaryElementList: return visit(node as! DictionaryElementListSyntax)
-    case .stringLiteralSegments: return visit(node as! StringLiteralSegmentsSyntax)
+    case .stringInterpolationSegments: return visit(node as! StringInterpolationSegmentsSyntax)
     case .tryExpr: return visit(node as! TryExprSyntax)
     case .declNameArgument: return visit(node as! DeclNameArgumentSyntax)
     case .declNameArgumentList: return visit(node as! DeclNameArgumentListSyntax)
@@ -986,6 +990,7 @@ open class SyntaxRewriter {
     case .arrayElement: return visit(node as! ArrayElementSyntax)
     case .dictionaryElement: return visit(node as! DictionaryElementSyntax)
     case .integerLiteralExpr: return visit(node as! IntegerLiteralExprSyntax)
+    case .stringLiteralExpr: return visit(node as! StringLiteralExprSyntax)
     case .booleanLiteralExpr: return visit(node as! BooleanLiteralExprSyntax)
     case .ternaryExpr: return visit(node as! TernaryExprSyntax)
     case .memberAccessExpr: return visit(node as! MemberAccessExprSyntax)
@@ -1008,7 +1013,7 @@ open class SyntaxRewriter {
     case .specializeExpr: return visit(node as! SpecializeExprSyntax)
     case .stringSegment: return visit(node as! StringSegmentSyntax)
     case .expressionSegment: return visit(node as! ExpressionSegmentSyntax)
-    case .stringLiteralExpr: return visit(node as! StringLiteralExprSyntax)
+    case .stringInterpolationExpr: return visit(node as! StringInterpolationExprSyntax)
     case .keyPathExpr: return visit(node as! KeyPathExprSyntax)
     case .keyPathBaseExpr: return visit(node as! KeyPathBaseExprSyntax)
     case .objcNamePiece: return visit(node as! ObjcNamePieceSyntax)
@@ -1314,14 +1319,14 @@ public protocol SyntaxVisitor {
   /// The function called after visiting `DictionaryElementListSyntax` and its descendents.
   ///   - node: the node we just finished visiting.
   mutating func visitPost(_ node: DictionaryElementListSyntax)
-  /// Visiting `StringLiteralSegmentsSyntax` specifically.
+  /// Visiting `StringInterpolationSegmentsSyntax` specifically.
   ///   - Parameter node: the node we are visiting.
   ///   - Returns: how should we continue visiting.
-  mutating func visit(_ node: StringLiteralSegmentsSyntax) -> SyntaxVisitorContinueKind
+  mutating func visit(_ node: StringInterpolationSegmentsSyntax) -> SyntaxVisitorContinueKind
 
-  /// The function called after visiting `StringLiteralSegmentsSyntax` and its descendents.
+  /// The function called after visiting `StringInterpolationSegmentsSyntax` and its descendents.
   ///   - node: the node we just finished visiting.
-  mutating func visitPost(_ node: StringLiteralSegmentsSyntax)
+  mutating func visitPost(_ node: StringInterpolationSegmentsSyntax)
   /// Visiting `TryExprSyntax` specifically.
   ///   - Parameter node: the node we are visiting.
   ///   - Returns: how should we continue visiting.
@@ -1546,6 +1551,14 @@ public protocol SyntaxVisitor {
   /// The function called after visiting `IntegerLiteralExprSyntax` and its descendents.
   ///   - node: the node we just finished visiting.
   mutating func visitPost(_ node: IntegerLiteralExprSyntax)
+  /// Visiting `StringLiteralExprSyntax` specifically.
+  ///   - Parameter node: the node we are visiting.
+  ///   - Returns: how should we continue visiting.
+  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind
+
+  /// The function called after visiting `StringLiteralExprSyntax` and its descendents.
+  ///   - node: the node we just finished visiting.
+  mutating func visitPost(_ node: StringLiteralExprSyntax)
   /// Visiting `BooleanLiteralExprSyntax` specifically.
   ///   - Parameter node: the node we are visiting.
   ///   - Returns: how should we continue visiting.
@@ -1722,14 +1735,14 @@ public protocol SyntaxVisitor {
   /// The function called after visiting `ExpressionSegmentSyntax` and its descendents.
   ///   - node: the node we just finished visiting.
   mutating func visitPost(_ node: ExpressionSegmentSyntax)
-  /// Visiting `StringLiteralExprSyntax` specifically.
+  /// Visiting `StringInterpolationExprSyntax` specifically.
   ///   - Parameter node: the node we are visiting.
   ///   - Returns: how should we continue visiting.
-  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind
+  mutating func visit(_ node: StringInterpolationExprSyntax) -> SyntaxVisitorContinueKind
 
-  /// The function called after visiting `StringLiteralExprSyntax` and its descendents.
+  /// The function called after visiting `StringInterpolationExprSyntax` and its descendents.
   ///   - node: the node we just finished visiting.
-  mutating func visitPost(_ node: StringLiteralExprSyntax)
+  mutating func visitPost(_ node: StringInterpolationExprSyntax)
   /// Visiting `KeyPathExprSyntax` specifically.
   ///   - Parameter node: the node we are visiting.
   ///   - Returns: how should we continue visiting.
@@ -3055,10 +3068,10 @@ public extension SyntaxVisitor {
     return .visitChildren
   }
   mutating func visitPost(_ node: DictionaryElementListSyntax) {}
-  mutating func visit(_ node: StringLiteralSegmentsSyntax) -> SyntaxVisitorContinueKind {
+  mutating func visit(_ node: StringInterpolationSegmentsSyntax) -> SyntaxVisitorContinueKind {
     return .visitChildren
   }
-  mutating func visitPost(_ node: StringLiteralSegmentsSyntax) {}
+  mutating func visitPost(_ node: StringInterpolationSegmentsSyntax) {}
   mutating func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
     return .visitChildren
   }
@@ -3171,6 +3184,10 @@ public extension SyntaxVisitor {
     return .visitChildren
   }
   mutating func visitPost(_ node: IntegerLiteralExprSyntax) {}
+  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+    return .visitChildren
+  }
+  mutating func visitPost(_ node: StringLiteralExprSyntax) {}
   mutating func visit(_ node: BooleanLiteralExprSyntax) -> SyntaxVisitorContinueKind {
     return .visitChildren
   }
@@ -3259,10 +3276,10 @@ public extension SyntaxVisitor {
     return .visitChildren
   }
   mutating func visitPost(_ node: ExpressionSegmentSyntax) {}
-  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+  mutating func visit(_ node: StringInterpolationExprSyntax) -> SyntaxVisitorContinueKind {
     return .visitChildren
   }
-  mutating func visitPost(_ node: StringLiteralExprSyntax) {}
+  mutating func visitPost(_ node: StringInterpolationExprSyntax) {}
   mutating func visit(_ node: KeyPathExprSyntax) -> SyntaxVisitorContinueKind {
     return .visitChildren
   }
@@ -4014,10 +4031,10 @@ public extension SyntaxAnyVisitor {
   mutating func visitPost(_ node: DictionaryElementListSyntax) {
     return visitAnyPost(node)
   }
-  mutating func visit(_ node: StringLiteralSegmentsSyntax) -> SyntaxVisitorContinueKind {
+  mutating func visit(_ node: StringInterpolationSegmentsSyntax) -> SyntaxVisitorContinueKind {
     return visitAny(node)
   }
-  mutating func visitPost(_ node: StringLiteralSegmentsSyntax) {
+  mutating func visitPost(_ node: StringInterpolationSegmentsSyntax) {
     return visitAnyPost(node)
   }
   mutating func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
@@ -4188,6 +4205,12 @@ public extension SyntaxAnyVisitor {
   mutating func visitPost(_ node: IntegerLiteralExprSyntax) {
     return visitAnyPost(node)
   }
+  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+    return visitAny(node)
+  }
+  mutating func visitPost(_ node: StringLiteralExprSyntax) {
+    return visitAnyPost(node)
+  }
   mutating func visit(_ node: BooleanLiteralExprSyntax) -> SyntaxVisitorContinueKind {
     return visitAny(node)
   }
@@ -4320,10 +4343,10 @@ public extension SyntaxAnyVisitor {
   mutating func visitPost(_ node: ExpressionSegmentSyntax) {
     return visitAnyPost(node)
   }
-  mutating func visit(_ node: StringLiteralExprSyntax) -> SyntaxVisitorContinueKind {
+  mutating func visit(_ node: StringInterpolationExprSyntax) -> SyntaxVisitorContinueKind {
     return visitAny(node)
   }
-  mutating func visitPost(_ node: StringLiteralExprSyntax) {
+  mutating func visitPost(_ node: StringInterpolationExprSyntax) {
     return visitAnyPost(node)
   }
   mutating func visit(_ node: KeyPathExprSyntax) -> SyntaxVisitorContinueKind {
@@ -5462,8 +5485,8 @@ fileprivate func doVisit<Visitor>(
       visitChildren(data, parent: node, &visitor)
     }
     visitor.visitPost(node)
-  case .stringLiteralSegments:
-    let node = StringLiteralSegmentsSyntax(data)
+  case .stringInterpolationSegments:
+    let node = StringInterpolationSegmentsSyntax(data)
     let needsChildren = visitor.visit(node) == .visitChildren
     // Avoid casting to `_SyntaxBase` if we don't need to visit children.
     if needsChildren && data.raw.numberOfChildren > 0 {
@@ -5694,6 +5717,14 @@ fileprivate func doVisit<Visitor>(
       visitChildren(data, parent: node, &visitor)
     }
     visitor.visitPost(node)
+  case .stringLiteralExpr:
+    let node = StringLiteralExprSyntax(data)
+    let needsChildren = visitor.visit(node) == .visitChildren
+    // Avoid casting to `_SyntaxBase` if we don't need to visit children.
+    if needsChildren && data.raw.numberOfChildren > 0 {
+      visitChildren(data, parent: node, &visitor)
+    }
+    visitor.visitPost(node)
   case .booleanLiteralExpr:
     let node = BooleanLiteralExprSyntax(data)
     let needsChildren = visitor.visit(node) == .visitChildren
@@ -5870,8 +5901,8 @@ fileprivate func doVisit<Visitor>(
       visitChildren(data, parent: node, &visitor)
     }
     visitor.visitPost(node)
-  case .stringLiteralExpr:
-    let node = StringLiteralExprSyntax(data)
+  case .stringInterpolationExpr:
+    let node = StringInterpolationExprSyntax(data)
     let needsChildren = visitor.visit(node) == .visitChildren
     // Avoid casting to `_SyntaxBase` if we don't need to visit children.
     if needsChildren && data.raw.numberOfChildren > 0 {

@@ -229,19 +229,19 @@ public enum SyntaxFactory {
     ], length: .zero, presence: .present))
     return DictionaryElementListSyntax(data)
   }
-  public static func makeStringLiteralSegments(
-    _ elements: [Syntax]) -> StringLiteralSegmentsSyntax {
-    let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.stringLiteralSegments,
+  public static func makeStringInterpolationSegments(
+    _ elements: [Syntax]) -> StringInterpolationSegmentsSyntax {
+    let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.stringInterpolationSegments,
       layout: elements.map { $0.raw }, presence: SourcePresence.present)
     let data = SyntaxData.forRoot(raw)
-    return StringLiteralSegmentsSyntax(data)
+    return StringInterpolationSegmentsSyntax(data)
   }
 
-  public static func makeBlankStringLiteralSegments() -> StringLiteralSegmentsSyntax {
-    let data = SyntaxData.forRoot(RawSyntax.create(kind: .stringLiteralSegments,
+  public static func makeBlankStringInterpolationSegments() -> StringInterpolationSegmentsSyntax {
+    let data = SyntaxData.forRoot(RawSyntax.create(kind: .stringInterpolationSegments,
       layout: [
     ], length: .zero, presence: .present))
-    return StringLiteralSegmentsSyntax(data)
+    return StringInterpolationSegmentsSyntax(data)
   }
   public static func makeTryExpr(tryKeyword: TokenSyntax, questionOrExclamationMark: TokenSyntax?, expression: ExprSyntax) -> TryExprSyntax {
     let layout: [RawSyntax?] = [
@@ -763,6 +763,23 @@ public enum SyntaxFactory {
     ], length: .zero, presence: .present))
     return IntegerLiteralExprSyntax(data)
   }
+  public static func makeStringLiteralExpr(stringLiteral: TokenSyntax) -> StringLiteralExprSyntax {
+    let layout: [RawSyntax?] = [
+      stringLiteral.raw,
+    ]
+    let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.stringLiteralExpr,
+      layout: layout, presence: SourcePresence.present)
+    let data = SyntaxData.forRoot(raw)
+    return StringLiteralExprSyntax(data)
+  }
+
+  public static func makeBlankStringLiteralExpr() -> StringLiteralExprSyntax {
+    let data = SyntaxData.forRoot(RawSyntax.create(kind: .stringLiteralExpr,
+      layout: [
+      RawSyntax.missingToken(TokenKind.stringLiteral("")),
+    ], length: .zero, presence: .present))
+    return StringLiteralExprSyntax(data)
+  }
   public static func makeBooleanLiteralExpr(booleanLiteral: TokenSyntax) -> BooleanLiteralExprSyntax {
     let layout: [RawSyntax?] = [
       booleanLiteral.raw,
@@ -1186,12 +1203,11 @@ public enum SyntaxFactory {
     ], length: .zero, presence: .present))
     return StringSegmentSyntax(data)
   }
-  public static func makeExpressionSegment(backslash: TokenSyntax, delimiter: TokenSyntax?, leftParen: TokenSyntax, expressions: FunctionCallArgumentListSyntax, rightParen: TokenSyntax) -> ExpressionSegmentSyntax {
+  public static func makeExpressionSegment(backslash: TokenSyntax, leftParen: TokenSyntax, expression: ExprSyntax, rightParen: TokenSyntax) -> ExpressionSegmentSyntax {
     let layout: [RawSyntax?] = [
       backslash.raw,
-      delimiter?.raw,
       leftParen.raw,
-      expressions.raw,
+      expression.raw,
       rightParen.raw,
     ]
     let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.expressionSegment,
@@ -1204,37 +1220,32 @@ public enum SyntaxFactory {
     let data = SyntaxData.forRoot(RawSyntax.create(kind: .expressionSegment,
       layout: [
       RawSyntax.missingToken(TokenKind.backslash),
-      nil,
       RawSyntax.missingToken(TokenKind.leftParen),
-      RawSyntax.missing(SyntaxKind.functionCallArgumentList),
+      RawSyntax.missing(SyntaxKind.expr),
       RawSyntax.missingToken(TokenKind.stringInterpolationAnchor),
     ], length: .zero, presence: .present))
     return ExpressionSegmentSyntax(data)
   }
-  public static func makeStringLiteralExpr(openDelimiter: TokenSyntax?, openQuote: TokenSyntax, segments: StringLiteralSegmentsSyntax, closeQuote: TokenSyntax, closeDelimiter: TokenSyntax?) -> StringLiteralExprSyntax {
+  public static func makeStringInterpolationExpr(openQuote: TokenSyntax, segments: StringInterpolationSegmentsSyntax, closeQuote: TokenSyntax) -> StringInterpolationExprSyntax {
     let layout: [RawSyntax?] = [
-      openDelimiter?.raw,
       openQuote.raw,
       segments.raw,
       closeQuote.raw,
-      closeDelimiter?.raw,
     ]
-    let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.stringLiteralExpr,
+    let raw = RawSyntax.createAndCalcLength(kind: SyntaxKind.stringInterpolationExpr,
       layout: layout, presence: SourcePresence.present)
     let data = SyntaxData.forRoot(raw)
-    return StringLiteralExprSyntax(data)
+    return StringInterpolationExprSyntax(data)
   }
 
-  public static func makeBlankStringLiteralExpr() -> StringLiteralExprSyntax {
-    let data = SyntaxData.forRoot(RawSyntax.create(kind: .stringLiteralExpr,
+  public static func makeBlankStringInterpolationExpr() -> StringInterpolationExprSyntax {
+    let data = SyntaxData.forRoot(RawSyntax.create(kind: .stringInterpolationExpr,
       layout: [
-      nil,
       RawSyntax.missingToken(TokenKind.stringQuote),
-      RawSyntax.missing(SyntaxKind.stringLiteralSegments),
+      RawSyntax.missing(SyntaxKind.stringInterpolationSegments),
       RawSyntax.missingToken(TokenKind.stringQuote),
-      nil,
     ], length: .zero, presence: .present))
-    return StringLiteralExprSyntax(data)
+    return StringInterpolationExprSyntax(data)
   }
   public static func makeKeyPathExpr(backslash: TokenSyntax, rootExpr: ExprSyntax?, expression: ExprSyntax) -> KeyPathExprSyntax {
     let layout: [RawSyntax?] = [
@@ -5160,12 +5171,6 @@ public enum SyntaxFactory {
                      leadingTrivia: leadingTrivia,
                      trailingTrivia: trailingTrivia)
   }
-  public static func makeRawStringDelimiter(_ text: String,
-    leadingTrivia: Trivia = [], trailingTrivia: Trivia = []) -> TokenSyntax {
-    return makeToken(.rawStringDelimiter(text), presence: .present,
-                     leadingTrivia: leadingTrivia,
-                     trailingTrivia: trailingTrivia)
-  }
   public static func makeStringSegment(_ text: String,
     leadingTrivia: Trivia = [], trailingTrivia: Trivia = []) -> TokenSyntax {
     return makeToken(.stringSegment(text), presence: .present,
@@ -5258,18 +5263,10 @@ public enum SyntaxFactory {
   public static func makeStringLiteralExpr(_ text: String,
     leadingTrivia: Trivia = [],
     trailingTrivia: Trivia = []) -> StringLiteralExprSyntax {
-    let string = makeStringSegment(text,
-                                   leadingTrivia: leadingTrivia,
-                                   trailingTrivia: trailingTrivia)
-    let segment = makeStringSegment(content: string)
-    let segments = makeStringLiteralSegments([segment])
-    let openQuote = makeStringQuoteToken(leadingTrivia: leadingTrivia)
-    let closeQuote = makeStringQuoteToken(trailingTrivia: trailingTrivia)
-    return makeStringLiteralExpr(openDelimiter: nil,
-                                 openQuote: openQuote,
-                                 segments: segments,
-                                 closeQuote: closeQuote,
-                                 closeDelimiter: nil)
+    let literal = makeStringLiteral("\"\(text)\"", 
+                                    leadingTrivia: leadingTrivia,
+                                    trailingTrivia: trailingTrivia)
+    return makeStringLiteralExpr(stringLiteral: literal)
   }
 
   public static func makeVariableExpr(_ text: String,

@@ -65,7 +65,7 @@ extension SyntaxClassification {
     // Separate checks for token nodes (most common checks) versus checks for layout nodes.
     if childKind == .token {
       switch (parentKind, indexInParent) {
-      case (.expressionSegment, 2):
+      case (.expressionSegment, 1):
         return (.stringInterpolationAnchor, true)
       case (.ifConfigClause, 0):
         return (.buildConfigId, false)
@@ -336,8 +336,6 @@ extension RawTokenKind {
       return .dollarIdentifier
     case .contextualKeyword:
       return .keyword
-    case .rawStringDelimiter:
-      return .none
     case .stringSegment:
       return .stringLiteral
     case .stringInterpolationAnchor:

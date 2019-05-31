@@ -1378,6 +1378,44 @@ extension IntegerLiteralExprSyntax {
   }
 }
 
+public struct StringLiteralExprSyntaxBuilder {
+  private var layout =
+    Array<RawSyntax?>(repeating: nil, count: 1)
+
+  internal init() {}
+
+  public mutating func useStringLiteral(_ node: TokenSyntax) {
+    let idx = StringLiteralExprSyntax.Cursor.stringLiteral.rawValue
+    layout[idx] = node.raw
+  }
+
+  internal mutating func buildData() -> SyntaxData {
+    if (layout[0] == nil) {
+      layout[0] = RawSyntax.missingToken(TokenKind.stringLiteral(""))
+    }
+
+    return .forRoot(RawSyntax.createAndCalcLength(kind: .stringLiteralExpr,
+      layout: layout, presence: .present))
+  }
+}
+
+extension StringLiteralExprSyntax {
+  /// Creates a `StringLiteralExprSyntax` using the provided build function.
+  /// - Parameter:
+  ///   - build: A closure that wil be invoked in order to initialize
+  ///            the fields of the syntax node.
+  ///            This closure is passed a `StringLiteralExprSyntaxBuilder` which you can use to
+  ///            incrementally build the structure of the node.
+  /// - Returns: A `StringLiteralExprSyntax` with all the fields populated in the builder
+  ///            closure.
+  public init(_ build: (inout StringLiteralExprSyntaxBuilder) -> Void) {
+    var builder = StringLiteralExprSyntaxBuilder()
+    build(&builder)
+    let data = builder.buildData()
+    self.init(data)
+  }
+}
+
 public struct BooleanLiteralExprSyntaxBuilder {
   private var layout =
     Array<RawSyntax?>(repeating: nil, count: 1)
@@ -2366,7 +2404,7 @@ extension StringSegmentSyntax {
 
 public struct ExpressionSegmentSyntaxBuilder {
   private var layout =
-    Array<RawSyntax?>(repeating: nil, count: 5)
+    Array<RawSyntax?>(repeating: nil, count: 4)
 
   internal init() {}
 
@@ -2375,25 +2413,14 @@ public struct ExpressionSegmentSyntaxBuilder {
     layout[idx] = node.raw
   }
 
-  public mutating func useDelimiter(_ node: TokenSyntax) {
-    let idx = ExpressionSegmentSyntax.Cursor.delimiter.rawValue
-    layout[idx] = node.raw
-  }
-
   public mutating func useLeftParen(_ node: TokenSyntax) {
     let idx = ExpressionSegmentSyntax.Cursor.leftParen.rawValue
     layout[idx] = node.raw
   }
 
-  public mutating func addExpression(_ elt: FunctionCallArgumentSyntax) {
-    let idx = ExpressionSegmentSyntax.Cursor.expressions.rawValue
-    if let list = layout[idx] {
-      layout[idx] = list.appending(elt.raw)
-    } else {
-      layout[idx] = RawSyntax.create(kind: SyntaxKind.functionCallArgumentList,
-        layout: [elt.raw], length: elt.raw.totalLength,
-        presence: SourcePresence.present)
-    }
+  public mutating func useExpression(_ node: ExprSyntax) {
+    let idx = ExpressionSegmentSyntax.Cursor.expression.rawValue
+    layout[idx] = node.raw
   }
 
   public mutating func useRightParen(_ node: TokenSyntax) {
@@ -2405,14 +2432,14 @@ public struct ExpressionSegmentSyntaxBuilder {
     if (layout[0] == nil) {
       layout[0] = RawSyntax.missingToken(TokenKind.backslash)
     }
+    if (layout[1] == nil) {
+      layout[1] = RawSyntax.missingToken(TokenKind.leftParen)
+    }
     if (layout[2] == nil) {
-      layout[2] = RawSyntax.missingToken(TokenKind.leftParen)
+      layout[2] = RawSyntax.missing(SyntaxKind.expr)
     }
     if (layout[3] == nil) {
-      layout[3] = RawSyntax.missing(SyntaxKind.functionCallArgumentList)
-    }
-    if (layout[4] == nil) {
-      layout[4] = RawSyntax.missingToken(TokenKind.stringInterpolationAnchor)
+      layout[3] = RawSyntax.missingToken(TokenKind.stringInterpolationAnchor)
     }
 
     return .forRoot(RawSyntax.createAndCalcLength(kind: .expressionSegment,
@@ -2437,70 +2464,60 @@ extension ExpressionSegmentSyntax {
   }
 }
 
-public struct StringLiteralExprSyntaxBuilder {
+public struct StringInterpolationExprSyntaxBuilder {
   private var layout =
-    Array<RawSyntax?>(repeating: nil, count: 5)
+    Array<RawSyntax?>(repeating: nil, count: 3)
 
   internal init() {}
 
-  public mutating func useOpenDelimiter(_ node: TokenSyntax) {
-    let idx = StringLiteralExprSyntax.Cursor.openDelimiter.rawValue
-    layout[idx] = node.raw
-  }
-
   public mutating func useOpenQuote(_ node: TokenSyntax) {
-    let idx = StringLiteralExprSyntax.Cursor.openQuote.rawValue
+    let idx = StringInterpolationExprSyntax.Cursor.openQuote.rawValue
     layout[idx] = node.raw
   }
 
   public mutating func addSegment(_ elt: Syntax) {
-    let idx = StringLiteralExprSyntax.Cursor.segments.rawValue
+    let idx = StringInterpolationExprSyntax.Cursor.segments.rawValue
     if let list = layout[idx] {
       layout[idx] = list.appending(elt.raw)
     } else {
-      layout[idx] = RawSyntax.create(kind: SyntaxKind.stringLiteralSegments,
+      layout[idx] = RawSyntax.create(kind: SyntaxKind.stringInterpolationSegments,
         layout: [elt.raw], length: elt.raw.totalLength,
         presence: SourcePresence.present)
     }
   }
 
   public mutating func useCloseQuote(_ node: TokenSyntax) {
-    let idx = StringLiteralExprSyntax.Cursor.closeQuote.rawValue
-    layout[idx] = node.raw
-  }
-
-  public mutating func useCloseDelimiter(_ node: TokenSyntax) {
-    let idx = StringLiteralExprSyntax.Cursor.closeDelimiter.rawValue
+    let idx = StringInterpolationExprSyntax.Cursor.closeQuote.rawValue
     layout[idx] = node.raw
   }
 
   internal mutating func buildData() -> SyntaxData {
+    if (layout[0] == nil) {
+      layout[0] = RawSyntax.missingToken(TokenKind.stringQuote)
+    }
     if (layout[1] == nil) {
-      layout[1] = RawSyntax.missingToken(TokenKind.stringQuote)
+      layout[1] = RawSyntax.missing(SyntaxKind.stringInterpolationSegments)
     }
     if (layout[2] == nil) {
-      layout[2] = RawSyntax.missing(SyntaxKind.stringLiteralSegments)
-    }
-    if (layout[3] == nil) {
-      layout[3] = RawSyntax.missingToken(TokenKind.stringQuote)
+      layout[2] = RawSyntax.missingToken(TokenKind.stringQuote)
     }
 
-    return .forRoot(RawSyntax.createAndCalcLength(kind: .stringLiteralExpr,
+    return .forRoot(RawSyntax.createAndCalcLength(kind: .stringInterpolationExpr,
       layout: layout, presence: .present))
   }
 }
 
-extension StringLiteralExprSyntax {
-  /// Creates a `StringLiteralExprSyntax` using the provided build function.
+extension StringInterpolationExprSyntax {
+  /// Creates a `StringInterpolationExprSyntax` using the provided build function.
   /// - Parameter:
   ///   - build: A closure that wil be invoked in order to initialize
   ///            the fields of the syntax node.
-  ///            This closure is passed a `StringLiteralExprSyntaxBuilder` which you can use to
+  ///            This closure is passed a `StringInterpolationExprSyntaxBuilder` which you can use to
   ///            incrementally build the structure of the node.
-  /// - Returns: A `StringLiteralExprSyntax` with all the fields populated in the builder
+  /// - Returns: A `StringInterpolationExprSyntax` with all the fields populated in the builder
   ///            closure.
-  public init(_ build: (inout StringLiteralExprSyntaxBuilder) -> Void) {
-    var builder = StringLiteralExprSyntaxBuilder()
+  public init(_ build: (inout StringInterpolationExprSyntaxBuilder) -> Void) {
+    var builder = StringInterpolationExprSyntaxBuilder()
     build(&builder)
     let data = builder.buildData()
     self.init(data)
